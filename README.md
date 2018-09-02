@@ -17,10 +17,10 @@ To install the script you can run the following command:
 ```shell
 python setup.py install --user
 ```
-Note that since it is just a small script that do not have dependecy, if you do not need to access it from "anywhere" on your computer, the installation part using ```setup.py``` is not necessary.
+Note that since it is just a small script that do not have dependency, if you do not need to access it from "anywhere" on your computer, the installation part using ```setup.py``` is not necessary.
 
 ## Typical usage
-Once install with the previous command, or from the folder containing the script, you can run the script as follow:
+Once installed with the previous command, or from the folder containing the script, you can run the script as follow:
 ```shell
 pkl2tlp.py -i path/to/input.pkl -o path/to/output.tlp
 ```
