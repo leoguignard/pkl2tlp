@@ -6,6 +6,7 @@ Small script to convert a pickle output from the output of our paper [Contact-de
 - README.md: this file
 - setup.py: install script
 - pkl2tlp.py: the converting script
+- pkl_and_correction2tlp.py: a slighlty more complete version, that output two tlp files, one before and one after the post correction. That, together with the plot of the number of cells per time point before and after correction. More dependencies are required for this script.
 
 ## Dependecy
 - cPickle
