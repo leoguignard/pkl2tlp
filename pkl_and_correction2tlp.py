@@ -130,7 +130,8 @@ def get_sisters(lin_tree_out, mother, init, end):
 
 
 
-def remove_too_little_branches(lin_tree, volumes, threshold=2000, soon=False,ShortLifespan=25,PearsonThreshold=0.9,time_begin=1,time_end=192):
+def remove_too_little_branches(lin_tree, volumes, threshold=2000, soon=False,ShortLifespan=25,PearsonThreshold=0.9,
+                                PTh2=.8,time_begin=1,time_end=192):
     """
     Build a corrected lineage tree (based on volume correlation and cell life span).
     Return a list of cells to fuse, new volumes and new lineage tree
@@ -141,7 +142,8 @@ def remove_too_little_branches(lin_tree, volumes, threshold=2000, soon=False,Sho
     """
     print 'Process remove too little branches'
     reverse_tree={v:k for k, values in lin_tree.iteritems() for v in values}
-    branches=branches_to_delete(lin_tree, volumes, threshold, reverse_tree, soon=soon,ShortLifespan=ShortLifespan,PearsonThreshold=PearsonThreshold,time_begin=time_begin,time_end=time_end)
+    branches=branches_to_delete(lin_tree, volumes, threshold, reverse_tree, soon=soon,ShortLifespan=ShortLifespan,
+                                PearsonThreshold=PearsonThreshold,time_begin=time_begin,time_end=time_end)
     lin_tree_out=deepcopy(lin_tree)
     to_fuse={}
     new_volumes=deepcopy(volumes)
@@ -175,7 +177,8 @@ def remove_too_little_branches(lin_tree, volumes, threshold=2000, soon=False,Sho
             for n in b:
                 lin_tree_out.pop(n, None)
                 reverse_tree.pop(n, None)
-        branches=branches_to_delete(lin_tree_out, new_volumes, threshold, reverse_tree, soon=soon,ShortLifespan=ShortLifespan,PearsonThreshold=PearsonThreshold,time_begin=time_begin,time_end=time_end)
+        branches=branches_to_delete(lin_tree_out, new_volumes, threshold, reverse_tree, soon=soon,
+                                    ShortLifespan=ShortLifespan,PearsonThreshold=PearsonThreshold,time_begin=time_begin,time_end=time_end)
 
     #### FUSE TOO EARLY DIVISIONS
     from scipy.stats.stats import pearsonr
@@ -187,7 +190,7 @@ def remove_too_little_branches(lin_tree, volumes, threshold=2000, soon=False,Sho
         common_len=min(len(tmp1), len(tmp2))
         if len(tmp1)>8 and len(tmp2)>8: 
             P[(n1, n2)]=pearsonr(tmp1[:common_len-1], tmp2[:common_len-1])
-    to_check=[k for k, v in P.iteritems() if v[0]<-.80] #.80 WHAT ? 
+    to_check=[k for k, v in P.iteritems() if v[0]<-PTh2] #.80 WHAT ? 
     scores_window={}
     for c1, c2 in to_check:
         tmp1, tmp2=get_volumes(c1, volumes, lin_tree_out), get_volumes(c2, volumes, lin_tree_out)
@@ -198,12 +201,12 @@ def remove_too_little_branches(lin_tree, volumes, threshold=2000, soon=False,Sho
         scores_window[(c1, c2)]=np.array(scores)
 
     for c, scores in scores_window.iteritems():
-        if (np.array(scores)<-.8).all(): #.8 WHAT ? 
+        if (np.array(scores)<-PTh2).all(): #.8 WHAT ? 
             first_size=len(scores)-1
         else:
             out=scores[1:]-scores[:-1]
             sizes=np.argsort(out)[::-1]
-            sizes=np.array([s for s in sizes if scores[s]<-.8])
+            sizes=np.array([s for s in sizes if scores[s]<-PTh2])
             first_size=sizes[sizes<len(scores)/2]
             if first_size!=[]:
                 first_size=first_size[0]
@@ -297,6 +300,15 @@ def main():
     parser = argparse.ArgumentParser(description='Convert pkl lineage into tulip lineage.')
     parser.add_argument('-i', '--input', help='input pickle .pkl file', required=True)
     parser.add_argument('-o', '--output', help='output tulip file (has to end with .tlp)', required=True)
+    parser.add_argument('-PT1', '--PearsonTh1', help='First Pearson Threshold (for the stopping branches), between 0 and 1, default 0.9',
+                                                default=0.9, type=float)
+    parser.add_argument('-PT2', '--PearsonTh2', 
+                                help='Second Pearson Threshold (for the divisions that happen too early), between 0 and 1, default 0.8', 
+                                default=0.8, type=float)
+    parser.add_argument('-SLS', '--ShortLifespan', 
+                                help='Branch length bellow which cells are considered too short to be true, default 25', 
+                                default=25, type=int)
+
     
     args = parser.parse_args()
     with open(args.input) as f:
@@ -305,7 +317,10 @@ def main():
     lineage = DATA['lin_tree']
     volumes = DATA['volumes_information']
 
-    lin_tree_out, new_volumes, to_fuse, been_fused = remove_too_little_branches(lineage, volumes)
+    lin_tree_out, new_volumes, to_fuse, been_fused = remove_too_little_branches(lineage, volumes,
+                                                        ShortLifespan=args.ShortLifespan,
+                                                        PearsonThreshold=args.PearsonTh1,
+                                                        PTh2=args.PearsonTh2)
 
     write_tlp_from_lin_tree(args.output.replace('.tlp', '_before.tlp'), DATA, extra_property = [['to fuse', been_fused, 0]])
 
