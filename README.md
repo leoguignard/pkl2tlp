@@ -9,6 +9,7 @@ Small script to convert a pickle output from the output of our paper [Contact-de
 
 ## Dependecy
 - cPickle
+- for pkl_and_correction2tlp it is also necessary to have numpy and matplotlib
 
 ## Install
 To install the script you can run the following command:
