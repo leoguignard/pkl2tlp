@@ -24,5 +24,5 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2.7',
     ],
-    scripts=['pkl2tlp.py']
+    scripts=['pkl2tlp.py', 'pkl_and_correction2tlp.py']
 )
