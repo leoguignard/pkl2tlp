@@ -3,7 +3,7 @@
 import argparse
 import cPickle as pkl
 
-def write_tlp_from_lin_tree(name, lin_tree_information, ListProperties=[]):
+def write_tlp_from_lin_tree(name, lin_tree_information, lin_name, ListProperties=[]):
     """
     Write a lineage tree into an understable tulip file
     name : path to the tulip file to create
@@ -11,7 +11,7 @@ def write_tlp_from_lin_tree(name, lin_tree_information, ListProperties=[]):
     properties : dictionary of properties { 'Property name': [{c_id: prop_val}, default_val]}
     """
     
-    lin_tree=lin_tree_information['lin_tree']
+    lin_tree=lin_tree_information[lin_name]
     if ListProperties is None:
         ListProperties=['volumes_information','h_mins_information','sigmas_information']
     properties=[] #Properties Dictionary initialisation
@@ -65,10 +65,14 @@ def main():
     with open(args.input) as f:
         DATA = pkl.load(f)
 
-    # lineage = DATA['lin_tree']
-    # volumes = DATA['volumes_information']
-
-    write_tlp_from_lin_tree(args.output, DATA)
+    if 'lin_tree' in DATA.keys():
+        lin_name = 'lin_tree'
+    elif 'Lineage tree' in DATA.keys():
+        lin_name = 'Lineage tree'
+    else:
+        print "There is no known key value for the lineage tree (expected 'lin_tree' or 'Lineage tree').\n\n\tThe script will not output a tulip file."
+        exit
+    write_tlp_from_lin_tree(args.output, DATA, lin_name)
 
 
 if __name__ == '__main__':
