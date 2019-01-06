@@ -24,5 +24,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2.7',
     ],
+    install_requires=['numpy'],
     scripts=['pkl2tlp.py', 'pkl_and_correction2tlp.py']
 )
