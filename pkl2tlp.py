@@ -60,7 +60,6 @@ def write_tlp_from_lin_tree(name, lin_tree_information, lin_name):
     f.write(")\n")
 
     nodes = set(lin_tree.keys()).union(set([v for values in lin_tree.values() for v in values]))
-    print len(nodes)
     count_edges = 0
     for m, ds in lin_tree.iteritems():
         count_edges += 1
@@ -74,8 +73,7 @@ def write_tlp_from_lin_tree(name, lin_tree_information, lin_name):
 
     for prop_name, property in lin_tree_information.iteritems():
         vals = property
-        print prop_name#, vals
-        if (not prop_name != lin_name and isinstance(vals, dict)
+        if (prop_name != lin_name and isinstance(vals, dict)
                 and not isinstance(vals.values()[0], dict)):
             if type(vals.values()[0]) == str:
                 default=''
@@ -100,6 +98,18 @@ def write_tlp_from_lin_tree(name, lin_tree_information, lin_name):
                 for node in nodes:
                     f.write("\t(node " + str(node) + str(" \"") + str(vals.get(node, default)) + "\")\n")
                 f.write(")\n") 
+            elif (isinstance(vals.values()[0], np.ndarray) or isinstance(vals.values()[0], list)) and len(vals.values()[0]) == 3:
+                f.write("(property 0 layout \"viewLayout\"\n")
+                f.write("\t(default \"(0, 0, 0)\" \"()\")\n")
+                for n in nodes:
+                    f.write("\t(node " + str(n) + str(" \"") + str(tuple(vals.get(n, (0, 0, 0)))) + "\")\n")
+                f.write(")\n")
+                f.write("(property 0 layout \"Barycenter\"\n")
+                f.write("\t(default \"(0, 0, 0)\" \"()\")\n")
+                for n in nodes:
+                    f.write("\t(node " + str(n) + str(" \"") + str(tuple(vals.get(n, (0, 0, 0)))) + "\")\n")
+                f.write(")\n")
+
     f.write(")")
     f.close()
 
